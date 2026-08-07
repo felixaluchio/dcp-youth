@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+}
+
+/* Kenyan Flag Ribbon Accent Gradient */
+.kenya-flag-strip {
+  background: linear-gradient(
+    to right,
+    #000000 0%, #000000 25%,
+    #BB0000 25%, #BB0000 50%,
+    #FFFFFF 50%, #FFFFFF 53%,
+    #006600 53%, #006600 100%
+  );
+}
+
+.kenya-flag-border {
+  border-image: linear-gradient(to right, #000000, #BB0000, #008000) 1;
+}
+
+/* Vibrant Two-Tone Green Split Background */
+.two-tone-green-bg {
+  background: linear-gradient(90deg, #10B981 0%, #059669 48%, #047857 52%, #064E3B 100%);
+}
+
+.two-tone-green-subtle {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 78, 59, 0.15) 100%);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #059669;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #047857;
+}
+

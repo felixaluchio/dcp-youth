@@ -1,0 +1,6 @@
+{
+  "name": "Democracy for the Citizens Party (DCP) - Skiza Wakenya",
+  "description": "Official portal for Democracy for the Citizens Party (DCP) - Skiza Wakenya. Discover 11 core policy pillars, upcoming rallies, and register as a member.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
