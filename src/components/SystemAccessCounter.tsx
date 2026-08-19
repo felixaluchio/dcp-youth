@@ -1,28 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { Users, ArrowRight } from 'lucide-react';
+import { collection, getCountFromServer } from 'firebase/firestore';
+import { db } from './AdminDashboard';
 
 interface SystemAccessCounterProps {
   onJoinClick?: () => void;
 }
 
 export const SystemAccessCounter: React.FC<SystemAccessCounterProps> = ({ onJoinClick }) => {
-  const [count, setCount] = useState<number>(0);
-  const [isIncrementing, setIsIncrementing] = useState<boolean>(false);
+  const [memberCount, setMemberCount] = useState<number>(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const increment = Math.floor(Math.random() * (20 - 5 + 1)) + 5;
-      setCount((prevCount) => prevCount + increment);
-      setIsIncrementing(true);
-
-      const timeout = setTimeout(() => {
-        setIsIncrementing(false);
-      }, 600);
-
-      return () => clearTimeout(timeout);
-    }, 180000); // 3 minutes = 180,000ms
-
-    return () => clearInterval(interval);
+    const fetchMemberCount = async () => {
+      console.log("🔍 Attempting to fetch member count...");
+      try {
+        const coll = collection(db, "members"); 
+        const snapshot = await getCountFromServer(coll);
+        const realCount = snapshot.data().count;
+        console.log("✅ Successfully fetched real count:", realCount);
+        
+        // Set baseline of 150 + actual database count
+        setMemberCount(150 + realCount);
+      } catch (error: any) {
+        console.error("❌ FIREBASE FETCH ERROR:", error?.message || error);
+        setMemberCount(150);
+      }
+    };
+    
+    fetchMemberCount();
   }, []);
 
   const handleJoinClick = () => {
@@ -58,12 +63,8 @@ export const SystemAccessCounter: React.FC<SystemAccessCounterProps> = ({ onJoin
 
           {/* Counter Display & Typography */}
           <div className="flex items-baseline space-x-3">
-            <div
-              className={`text-4xl sm:text-6xl font-black text-white tracking-tight font-mono transition-all duration-300 ${
-                isIncrementing ? 'scale-105 text-green-300' : 'scale-100 text-white'
-              }`}
-            >
-              {count.toLocaleString()}
+            <div className="text-4xl sm:text-6xl font-black text-white tracking-tight font-mono">
+              {memberCount.toLocaleString()}
             </div>
             <Users className="w-6 h-6 text-green-400 shrink-0 self-center hidden sm:block opacity-80" />
           </div>

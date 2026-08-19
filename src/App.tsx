@@ -4,12 +4,14 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { SystemAccessCounter } from './components/SystemAccessCounter';
 import { FocusAreasSection } from './components/FocusAreasSection';
 import { LeadershipSection } from './components/LeadershipSection';
 import { EventHighlightSection } from './components/EventHighlightSection';
+import VideoLibrarySection from './components/VideoLibrarySection';
 import { RegistrationStepperSection } from './components/RegistrationStepperSection';
 import ElectionCountdown from './components/ElectionCountdown';
 import { Footer } from './components/Footer';
@@ -19,7 +21,10 @@ import { PillarDetailModal } from './components/PillarDetailModal';
 import { CountyOfficesModal } from './components/CountyOfficesModal';
 import { RallyPassModal } from './components/RallyPassModal';
 
-export default function App() {
+import AdminProtectedRoute from './components/AdminProtectedRoute';
+import AdminDashboard from './components/AdminDashboard';
+
+function PublicPortal() {
   const [activeSection, setActiveSection] = useState<string>('hero');
   const [selectedPillar, setSelectedPillar] = useState<Pillar | null>(null);
   const [isCountyModalOpen, setIsCountyModalOpen] = useState<boolean>(false);
@@ -95,6 +100,9 @@ export default function App() {
           onOpenCountyModal={() => setIsCountyModalOpen(true)}
         />
 
+        {/* VIDEO LIBRARY SECTION */}
+        <VideoLibrarySection />
+
         {/* SECTION 5: MEMBERSHIP REGISTRATION (5-Step Form) */}
         <RegistrationStepperSection />
 
@@ -134,3 +142,20 @@ export default function App() {
     </div>
   );
 }
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<PublicPortal />} />
+      <Route
+        path="/admin"
+        element={
+          <AdminProtectedRoute>
+            <AdminDashboard />
+          </AdminProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+}
+

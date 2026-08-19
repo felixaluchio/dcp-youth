@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from './AdminDashboard';
 import { MemberRegistration } from '../types';
 import { KENYA_COUNTIES } from '../data/kenyaData';
 import { 
@@ -115,17 +117,35 @@ export const RegistrationStepperSection: React.FC = () => {
     if (!validateStep(4)) return;
 
     setIsProcessingPayment(true);
-    setTimeout(() => {
+    setTimeout(async () => {
       const generatedRef = `MPESA-${Math.floor(100000 + Math.random() * 900000)}`;
       const generatedMemberId = `DCP-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
       
-      setFormData(prev => ({
-        ...prev,
+      const completedData = {
+        ...formData,
         transactionRef: generatedRef,
         memberId: generatedMemberId,
         paymentTimestamp: new Date().toLocaleString(),
         isCompleted: true
-      }));
+      };
+
+      setFormData(completedData);
+
+      try {
+        await addDoc(collection(db, "members"), {
+          fullName: completedData.fullName,
+          mobileNumber: completedData.mobileNumber,
+          email: completedData.email,
+          county: completedData.county,
+          constituency: completedData.constituency,
+          ward: completedData.ward,
+          memberId: completedData.memberId,
+          transactionRef: completedData.transactionRef,
+          registeredAt: serverTimestamp()
+        });
+      } catch (err) {
+        console.error("Failed to save member to Firestore:", err);
+      }
 
       setIsProcessingPayment(false);
       setPaymentSuccess(true);

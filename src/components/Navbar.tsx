@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Shield, Users, MapPin, Calendar, FileText, ChevronRight, PhoneCall } from 'lucide-react';
+import { Menu, X, Shield, Users, MapPin, Calendar, FileText, ChevronRight, PhoneCall, ChevronDown } from 'lucide-react';
 import dcpOfficialLogo from '../assets/images/dcp_official_logo_hd_1786025213182.jpg';
 
 interface NavbarProps {
@@ -15,6 +15,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [daysLeft, setDaysLeft] = useState(0);
+  const [isMediaOpen, setIsMediaOpen] = useState(false);
+  const [mobileMediaOpen, setMobileMediaOpen] = useState(false);
 
   useEffect(() => {
     const targetDate = new Date('2027-08-10T00:00:00+03:00').getTime();
@@ -70,10 +72,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Main Navigation Bar - Taller container for prominent logo */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-24 lg:h-28 py-2">
+        <div className="flex justify-between items-center h-24 lg:h-28 py-2 gap-6 md:gap-10">
           
           {/* Prominent Official DCP Logo with Youth League Badge */}
-          <div className="flex flex-col items-center cursor-pointer py-1 group" onClick={() => scrollTo('hero')}>
+          <div className="flex flex-col items-center cursor-pointer py-1 group shrink-0 min-w-max" onClick={() => scrollTo('hero')}>
             <img 
               src={dcpOfficialLogo} 
               alt="Democracy for the Citizens Party (DCP) Logo" 
@@ -86,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Desktop Nav Links - Centered with Pill Active State */}
-          <nav className="hidden md:flex space-x-2 lg:space-x-3 items-center">
+          <nav className="hidden md:flex space-x-1 lg:space-x-2 items-center ml-4 md:ml-8 lg:ml-12">
             <button
               onClick={() => scrollTo('hero')}
               className={`text-sm transition-all duration-200 cursor-pointer ${
@@ -134,6 +136,44 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
               Events
             </button>
+
+            {/* Media Dropdown */}
+            <div className="relative group py-2">
+              <button
+                onClick={() => setIsMediaOpen(!isMediaOpen)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer flex items-center gap-1"
+              >
+                <span>Media</span>
+                <ChevronDown className="w-4 h-4 text-gray-500 transition-transform duration-200 group-hover:rotate-180" />
+              </button>
+
+              <div className="absolute top-full left-0 pt-2 hidden group-hover:block z-50">
+                <div className="w-60 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 flex flex-col gap-1">
+                  <a
+                    href="#past-events"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const el = document.getElementById('past-events') || document.getElementById('rally');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-green-800 hover:bg-green-50 rounded-xl transition-colors block"
+                  >
+                    Past Events (Photo Gallery)
+                  </a>
+                  <a
+                    href="#video-library"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const el = document.getElementById('video-library') || document.getElementById('rally');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-green-800 hover:bg-green-50 rounded-xl transition-colors block"
+                  >
+                    Video Library
+                  </a>
+                </div>
+              </div>
+            </div>
 
             <button
               onClick={() => scrollTo('registration')}
@@ -233,6 +273,45 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Events</span>
             <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded">Past & Upcoming</span>
           </button>
+
+          {/* Media Submenu for Mobile */}
+          <div className="space-y-1">
+            <button
+              onClick={() => setMobileMediaOpen(!mobileMediaOpen)}
+              className="w-full text-left px-4 py-2.5 rounded-lg font-medium text-gray-800 hover:bg-gray-100 flex items-center justify-between cursor-pointer"
+            >
+              <span>Media</span>
+              <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${mobileMediaOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {mobileMediaOpen && (
+              <div className="pl-6 space-y-1">
+                <a
+                  href="#past-events"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMobileMenuOpen(false);
+                    const el = document.getElementById('past-events') || document.getElementById('rally');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="block px-4 py-2 rounded-xl text-sm font-medium text-gray-700 hover:text-green-800 hover:bg-green-50 transition-colors"
+                >
+                  Past Events (Photo Gallery)
+                </a>
+                <a
+                  href="#video-library"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMobileMenuOpen(false);
+                    const el = document.getElementById('video-library') || document.getElementById('rally');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="block px-4 py-2 rounded-xl text-sm font-medium text-gray-700 hover:text-green-800 hover:bg-green-50 transition-colors"
+                >
+                  Video Library
+                </a>
+              </div>
+            )}
+          </div>
           <button
             onClick={() => scrollTo('registration')}
             className="w-full text-left px-4 py-2.5 rounded-lg font-medium text-gray-800 hover:bg-gray-100"

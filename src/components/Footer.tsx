@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Shield, Mail, Phone, MapPin, Send, CheckCircle2, ArrowUpRight, Twitter, Facebook, Instagram } from 'lucide-react';
 
 interface FooterProps {
@@ -56,6 +57,10 @@ export const Footer: React.FC<FooterProps> = ({
             <button onClick={() => scrollTo('hero')} className="text-xs text-left opacity-70 hover:opacity-100 cursor-pointer">About DCP</button>
             <button onClick={onOpenCountyModal} className="text-xs text-left opacity-70 hover:opacity-100 cursor-pointer">County Offices</button>
             <button onClick={() => scrollTo('rally')} className="text-xs text-left opacity-70 hover:opacity-100 cursor-pointer">Events & Rallies</button>
+            <Link to="/admin" className="text-xs text-left text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1 mt-1 font-medium">
+              <span>Admin Login</span>
+              <ArrowUpRight className="w-3 h-3 text-slate-500" />
+            </Link>
           </div>
           <div className="flex flex-col gap-2">
             <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">Legal & Governance</span>
@@ -121,8 +126,14 @@ export const Footer: React.FC<FooterProps> = ({
       </div>
 
       <div className="flex flex-col sm:flex-row justify-between items-center pt-6 border-t border-white/10 text-slate-400 gap-2">
-        <span className="text-[10px] uppercase tracking-widest font-bold">© 2026 Democracy for the Citizens Party. All rights reserved.</span>
-        <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500">Reg: Feb 3, 2025 · Certificate No 103</span>
+        <span className="text-[10px] uppercase tracking-widest font-bold">© 2026 DCP Youth League. All rights reserved.</span>
+        <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest font-bold text-slate-500">
+          <span>Reg: Feb 3, 2025 · Certificate No 103</span>
+          <span className="text-slate-700">|</span>
+          <Link to="/admin" className="text-slate-500 hover:text-slate-300 transition-colors lowercase font-medium">
+            Admin Login
+          </Link>
+        </div>
       </div>
     </footer>
   );
