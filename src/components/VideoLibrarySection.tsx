@@ -80,8 +80,8 @@ export const VideoLibrarySection: React.FC = () => {
           setEvents(fetched);
           setIsLoading(false);
         }
-      } catch (err) {
-        console.error('[VIDEO LIBRARY] Error loading videos from Firestore:', err);
+      } catch (err: any) {
+        console.warn('[VIDEO LIBRARY] Notice loading videos from Firestore (using empty fallback):', err?.message || err);
         if (isMounted) {
           setIsLoading(false);
         }

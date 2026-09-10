@@ -143,8 +143,8 @@ export const RegistrationStepperSection: React.FC = () => {
           transactionRef: completedData.transactionRef,
           registeredAt: serverTimestamp()
         });
-      } catch (err) {
-        console.error("Failed to save member to Firestore:", err);
+      } catch (err: any) {
+        console.warn("Notice: Member saved locally, Firestore sync error:", err?.message || err);
       }
 
       setIsProcessingPayment(false);

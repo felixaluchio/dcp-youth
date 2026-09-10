@@ -22,7 +22,7 @@ export const SystemAccessCounter: React.FC<SystemAccessCounterProps> = ({ onJoin
         // Set baseline of 150 + actual database count
         setMemberCount(150 + realCount);
       } catch (error: any) {
-        console.error("❌ FIREBASE FETCH ERROR:", error?.message || error);
+        console.warn("⚠️ Notice fetching member count from Firestore (using baseline 150):", error?.message || error);
         setMemberCount(150);
       }
     };

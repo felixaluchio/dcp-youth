@@ -1,0 +1,134 @@
+{
+  "entities": {
+    "member": {
+      "title": "Member",
+      "description": "Party member registration record",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the registered member",
+          "maxLength": 128
+        },
+        "mobileNumber": {
+          "type": "string",
+          "description": "Phone number of member",
+          "maxLength": 20
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of member",
+          "maxLength": 128
+        },
+        "county": {
+          "type": "string",
+          "description": "County of residence",
+          "maxLength": 64
+        },
+        "constituency": {
+          "type": "string",
+          "description": "Constituency of residence",
+          "maxLength": 64
+        },
+        "ward": {
+          "type": "string",
+          "description": "Ward of residence",
+          "maxLength": 64
+        },
+        "memberId": {
+          "type": "string",
+          "description": "Assigned DCP membership ID",
+          "maxLength": 64
+        },
+        "transactionRef": {
+          "type": "string",
+          "description": "M-Pesa transaction reference number",
+          "maxLength": 64
+        },
+        "registeredAt": {
+          "type": "string",
+          "description": "Server timestamp when registered"
+        }
+      },
+      "required": ["fullName", "mobileNumber", "county"]
+    },
+    "event": {
+      "title": "Event",
+      "description": "Party event, rally, photo gallery item, or video media",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Event or video title",
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed summary or snippet",
+          "maxLength": 5000
+        },
+        "event_date": {
+          "type": "string",
+          "description": "Date of the event",
+          "maxLength": 32
+        },
+        "date": {
+          "type": "string",
+          "description": "Alternative date string",
+          "maxLength": 32
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of event: photo, video, text, upcoming",
+          "maxLength": 32
+        },
+        "timing": {
+          "type": "string",
+          "description": "Timing classification: upcoming or past",
+          "maxLength": 32
+        },
+        "category": {
+          "type": "string",
+          "description": "Event category",
+          "maxLength": 64
+        },
+        "location": {
+          "type": "string",
+          "description": "Venue or town location",
+          "maxLength": 128
+        },
+        "county": {
+          "type": "string",
+          "description": "County where event takes place",
+          "maxLength": 64
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Primary image URL",
+          "maxLength": 2048
+        },
+        "videoUrl": {
+          "type": "string",
+          "description": "YouTube or video stream URL",
+          "maxLength": 2048
+        },
+        "youtube_url": {
+          "type": "string",
+          "description": "YouTube video link",
+          "maxLength": 2048
+        }
+      },
+      "required": ["title"]
+    }
+  },
+  "firestore": {
+    "/members/{memberId}": {
+      "schema": "member",
+      "description": "Party member registrations"
+    },
+    "/events/{eventId}": {
+      "schema": "event",
+      "description": "Party events, rallies, videos, and photo gallery"
+    }
+  }
+}
