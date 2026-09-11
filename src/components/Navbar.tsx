@@ -316,7 +316,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => scrollTo('registration')}
             className="w-full text-left px-4 py-2.5 rounded-lg font-medium text-gray-800 hover:bg-gray-100"
           >
-            Membership Registration (KES 100)
+            Membership Registration (Free)
           </button>
           <button
             onClick={() => {

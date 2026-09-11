@@ -29,8 +29,7 @@ import {
 
 export const RegistrationStepperSection: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
-  const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
-  const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const [formData, setFormData] = useState<MemberRegistration>({
@@ -49,8 +48,6 @@ export const RegistrationStepperSection: React.FC = () => {
     isInfoAccurate: false,
     acceptConstitution: false,
     consentDataProcessing: false,
-    paymentMobileNumber: '',
-    confirmPaymentMobileNumber: '',
     transactionRef: '',
     memberId: ''
   });
@@ -86,11 +83,6 @@ export const RegistrationStepperSection: React.FC = () => {
       if (!formData.isInfoAccurate) errors.isInfoAccurate = 'Please confirm that your details are accurate.';
       if (!formData.acceptConstitution) errors.acceptConstitution = 'You must accept the DCP constitution.';
       if (!formData.consentDataProcessing) errors.consentDataProcessing = 'Consent to data processing is required.';
-    } else if (step === 4) {
-      if (!formData.paymentMobileNumber.trim()) errors.paymentMobileNumber = 'M-Pesa payment mobile number is required.';
-      if (formData.paymentMobileNumber !== formData.confirmPaymentMobileNumber) {
-        errors.confirmPaymentMobileNumber = 'Payment phone numbers do not match.';
-      }
     }
 
     setFormErrors(errors);
@@ -99,7 +91,7 @@ export const RegistrationStepperSection: React.FC = () => {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      if (currentStep < 5) {
+      if (currentStep < 4) {
         setCurrentStep(prev => prev + 1);
         window.scrollTo({ top: document.getElementById('registration')?.offsetTop || 0, behavior: 'smooth' });
       }
@@ -113,52 +105,52 @@ export const RegistrationStepperSection: React.FC = () => {
     }
   };
 
-  const handleSimulatePayment = () => {
-    if (!validateStep(4)) return;
+  const handleCompleteRegistration = async () => {
+    if (!validateStep(3)) return;
 
-    setIsProcessingPayment(true);
-    setTimeout(async () => {
-      const generatedRef = `MPESA-${Math.floor(100000 + Math.random() * 900000)}`;
-      const generatedMemberId = `DCP-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
-      
-      const completedData = {
-        ...formData,
-        transactionRef: generatedRef,
-        memberId: generatedMemberId,
-        paymentTimestamp: new Date().toLocaleString(),
-        isCompleted: true
-      };
+    setIsSubmitting(true);
+    const generatedRef = `FREE-REG-${Math.floor(100000 + Math.random() * 900000)}`;
+    const generatedMemberId = `DCP-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
+    const timestamp = new Date().toLocaleString();
 
-      setFormData(completedData);
+    const completedData: MemberRegistration = {
+      ...formData,
+      transactionRef: generatedRef,
+      memberId: generatedMemberId,
+      paymentTimestamp: timestamp,
+      membershipType: 'Free Citizen Member',
+      isCompleted: true
+    };
 
-      try {
-        await addDoc(collection(db, "members"), {
-          fullName: completedData.fullName,
-          mobileNumber: completedData.mobileNumber,
-          email: completedData.email,
-          county: completedData.county,
-          constituency: completedData.constituency,
-          ward: completedData.ward,
-          memberId: completedData.memberId,
-          transactionRef: completedData.transactionRef,
-          registeredAt: serverTimestamp()
-        });
-      } catch (err: any) {
-        console.warn("Notice: Member saved locally, Firestore sync error:", err?.message || err);
-      }
+    setFormData(completedData);
 
-      setIsProcessingPayment(false);
-      setPaymentSuccess(true);
-      setCurrentStep(5);
-    }, 2500);
+    try {
+      await addDoc(collection(db, "members"), {
+        fullName: completedData.fullName,
+        mobileNumber: completedData.mobileNumber,
+        email: completedData.email,
+        county: completedData.county,
+        constituency: completedData.constituency,
+        ward: completedData.ward,
+        memberId: completedData.memberId,
+        transactionRef: "FREE_REGISTRATION",
+        membershipType: "Free Citizen Member",
+        registeredAt: serverTimestamp()
+      });
+    } catch (err: any) {
+      console.warn("Notice: Member registered locally, Firestore sync notice:", err?.message || err);
+    }
+
+    setIsSubmitting(false);
+    setCurrentStep(4);
+    window.scrollTo({ top: document.getElementById('registration')?.offsetTop || 0, behavior: 'smooth' });
   };
 
   const steps = [
     { num: 1, label: "Personal Details", icon: User },
     { num: 2, label: "Location", icon: MapPin },
     { num: 3, label: "Declaration", icon: ShieldCheck },
-    { num: 4, label: "Payment", icon: CreditCard },
-    { num: 5, label: "Confirmation", icon: Award }
+    { num: 4, label: "Confirmation", icon: Award }
   ];
 
   return (
@@ -176,7 +168,7 @@ export const RegistrationStepperSection: React.FC = () => {
             DCP MEMBERSHIP STEPPER
           </h2>
           <div className="flex items-center justify-center gap-4 text-xs font-bold uppercase tracking-wider text-slate-600">
-            <span>Registration Fee: <span className="text-[#00843D] font-black">KES 100</span></span>
+            <span>Registration Fee: <span className="text-[#00843D] font-black">Free (KES 0)</span></span>
             <span>•</span>
             <span>Step {currentStep} of {steps.length} ({Math.round((currentStep / steps.length) * 100)}% Complete)</span>
           </div>
@@ -268,7 +260,7 @@ export const RegistrationStepperSection: React.FC = () => {
                       type="tel"
                       placeholder="e.g., 0712 345 678"
                       value={formData.mobileNumber}
-                      onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value, paymentMobileNumber: e.target.value, confirmPaymentMobileNumber: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
                       className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 ${
                         formErrors.mobileNumber ? 'border-red-500 ring-red-100' : 'border-slate-300 focus:ring-emerald-500'
                       }`}
@@ -520,111 +512,24 @@ export const RegistrationStepperSection: React.FC = () => {
 
                 </div>
 
+                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-800 flex items-start space-x-2">
+                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>100% Free Registration:</strong> No payment or fee is required. Upon submission, your official Digital Membership Card & Certificate will be instantly generated and active.
+                  </span>
+                </div>
+
                 {Object.keys(formErrors).length > 0 && (
                   <div className="p-3 bg-red-50 text-red-600 text-xs font-medium rounded-xl border border-red-200 flex items-center space-x-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>Please accept all required declarations above to proceed to payment.</span>
+                    <span>Please accept all required declarations above to complete your free registration.</span>
                   </div>
                 )}
               </div>
             )}
 
-            {/* STEP 4: PAYMENT */}
+            {/* STEP 4: CONFIRMATION (FREE REGISTRATION COMPLETED) */}
             {currentStep === 4 && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-emerald-600" />
-                    Step 4: One-Time Registration Fee (KES 100)
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Pay KES 100 via M-Pesa to finalize your citizen membership registration.
-                  </p>
-                </div>
-
-                {/* M-Pesa Payment Box */}
-                <div className="bg-gradient-to-br from-slate-900 to-slate-950 p-6 rounded-3xl text-white space-y-6 shadow-xl border border-slate-800">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center font-bold text-white text-lg">
-                        M
-                      </div>
-                      <div>
-                        <p className="font-extrabold text-white text-base">M-PESA Express</p>
-                        <p className="text-xs text-slate-400">STK Push Direct Checkout</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-2xl font-black text-emerald-400">KES 100</span>
-                      <span className="block text-[10px] text-slate-400 uppercase">One-Time Fee</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
-                        M-Pesa Mobile Number *
-                      </label>
-                      <input
-                        type="tel"
-                        placeholder="e.g., 0712 345 678"
-                        value={formData.paymentMobileNumber}
-                        onChange={(e) => setFormData({ ...formData, paymentMobileNumber: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      />
-                      {formErrors.paymentMobileNumber && (
-                        <p className="text-xs text-red-400 mt-1">{formErrors.paymentMobileNumber}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
-                        Confirm M-Pesa Mobile Number *
-                      </label>
-                      <input
-                        type="tel"
-                        placeholder="Re-enter M-Pesa number"
-                        value={formData.confirmPaymentMobileNumber}
-                        onChange={(e) => setFormData({ ...formData, confirmPaymentMobileNumber: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      />
-                      {formErrors.confirmPaymentMobileNumber && (
-                        <p className="text-xs text-red-400 mt-1">{formErrors.confirmPaymentMobileNumber}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={handleSimulatePayment}
-                    disabled={isProcessingPayment}
-                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl text-base shadow-xl transition-all flex items-center justify-center space-x-2 cursor-pointer border-b-4 border-emerald-800 disabled:opacity-50"
-                  >
-                    {isProcessingPayment ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                        <span>Sending M-Pesa STK Prompt to Phone...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Smartphone className="w-5 h-5" />
-                        <span>Pay KES 100 via M-Pesa STK</span>
-                      </>
-                    )}
-                  </button>
-
-                </div>
-
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600 flex items-start space-x-2">
-                  <Lock className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>
-                    Secured by Safaricom M-Pesa & Kenya Political Parties Act compliance. You will receive an instant PIN pop-up on your handset.
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 5: CONFIRMATION */}
-            {currentStep === 5 && (
               <div className="space-y-6 text-center">
                 <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600 shadow-inner">
                   <Award className="w-10 h-10" />
@@ -632,13 +537,13 @@ export const RegistrationStepperSection: React.FC = () => {
 
                 <div>
                   <span className="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-full uppercase tracking-wider">
-                    Registration Submitted
+                    Registration Confirmed (Free)
                   </span>
                   <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">
                     Welcome to DCP Skiza Wakenya!
                   </h3>
                   <p className="text-slate-600 text-xs sm:text-sm max-w-md mx-auto mt-1">
-                    Your registration payment of KES 100 has been verified. Here is your official Digital Member Certificate & Card.
+                    Your official free membership registration has been completed. Here is your official Digital Member Certificate & Card.
                   </p>
                 </div>
 
@@ -655,7 +560,7 @@ export const RegistrationStepperSection: React.FC = () => {
                       <p className="text-xl font-extrabold text-white">Digital Membership Card</p>
                     </div>
                     <span className="bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase">
-                      ACTIVE
+                      ACTIVE · FREE
                     </span>
                   </div>
 
@@ -680,8 +585,8 @@ export const RegistrationStepperSection: React.FC = () => {
                           <p className="font-bold text-slate-200">{formData.constituency}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-slate-400 uppercase font-bold">M-Pesa Ref</p>
-                          <p className="font-mono text-emerald-300">{formData.transactionRef || "MPESA-849201"}</p>
+                          <p className="text-[10px] text-slate-400 uppercase font-bold">Membership</p>
+                          <p className="font-semibold text-emerald-300">Official Free Member</p>
                         </div>
                       </div>
                     </div>
@@ -732,7 +637,7 @@ export const RegistrationStepperSection: React.FC = () => {
             )}
 
             {/* Stepper Navigation Buttons */}
-            {currentStep < 5 && (
+            {currentStep < 4 && (
               <div className="mt-10 pt-6 border-t border-slate-200 flex items-center justify-between">
                 <button
                   onClick={handleBack}
@@ -743,13 +648,31 @@ export const RegistrationStepperSection: React.FC = () => {
                   <span>Previous</span>
                 </button>
 
-                {currentStep < 4 && (
+                {currentStep < 3 ? (
                   <button
                     onClick={handleNext}
                     className="px-7 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center space-x-2 cursor-pointer border-b-2 border-emerald-800"
                   >
                     <span>Continue to Step 0{currentStep + 1}</span>
                     <ArrowRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleCompleteRegistration}
+                    disabled={isSubmitting}
+                    className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs sm:text-sm shadow-lg hover:shadow-emerald-600/20 transition-all flex items-center space-x-2 cursor-pointer border-b-2 border-emerald-800 disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5" />
+                        <span>Registering Member...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        <span>Complete Free Registration</span>
+                      </>
+                    )}
                   </button>
                 )}
               </div>
@@ -760,17 +683,20 @@ export const RegistrationStepperSection: React.FC = () => {
           {/* Right Column: Sticky Informational Cards (Exact requested content) */}
           <div className="lg:col-span-4 space-y-6 sticky top-28">
             
-            {/* Card 1: Registration Fee */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-3 relative overflow-hidden">
+            {/* Card 1: 100% Free Registration */}
+            <div className="bg-white rounded-3xl p-6 border border-emerald-200/80 shadow-sm space-y-3 relative overflow-hidden">
               <div className="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-lg">
-                <CreditCard className="w-5 h-5" />
+                <Sparkles className="w-5 h-5" />
               </div>
               <div>
                 <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">Membership Standard</span>
-                <h4 className="text-xl font-extrabold text-slate-900">Registration Fee - KES 100</h4>
+                <h4 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  Free Registration
+                  <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full uppercase">100% Free</span>
+                </h4>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
-                One-time membership fee. This single contribution goes directly towards local ward grassroots mobilization, townhall organization, and member card processing across all 47 counties.
+                Zero registration fees. Democracy for the Citizens Party (DCP) believes political and civic participation is a fundamental constitutional right. Membership registration is completely free for every Kenyan across all 47 counties.
               </p>
             </div>
 
@@ -799,7 +725,7 @@ export const RegistrationStepperSection: React.FC = () => {
                 </li>
                 <li className="flex items-center space-x-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Pay the registration fee (KES 100)</span>
+                  <span>100% Free registration (No fee required)</span>
                 </li>
               </ul>
             </div>
@@ -811,7 +737,7 @@ export const RegistrationStepperSection: React.FC = () => {
                 <span>Please Note</span>
               </div>
               <p className="text-xs leading-relaxed text-amber-800">
-                Registration and payment do not automatically confirm membership. Applications may be reviewed in accordance with party rules, constitutional guidelines, and the Registrar of Political Parties regulations.
+                Registration does not automatically confirm membership. Applications may be reviewed in accordance with party rules, constitutional guidelines, and the Registrar of Political Parties regulations.
               </p>
             </div>
 

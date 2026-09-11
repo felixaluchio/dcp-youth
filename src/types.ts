@@ -30,13 +30,12 @@ export interface MemberRegistration {
   acceptConstitution: boolean;
   consentDataProcessing: boolean;
 
-  // Step 4: Payment
-  paymentMobileNumber: string;
-  confirmPaymentMobileNumber: string;
+  // Registration Status & Verification
+  paymentMobileNumber?: string;
+  confirmPaymentMobileNumber?: string;
   transactionRef?: string;
   paymentTimestamp?: string;
-
-  // Step 5: Status
+  membershipType?: string;
   memberId?: string;
   isCompleted?: boolean;
 }

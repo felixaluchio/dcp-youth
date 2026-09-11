@@ -9,25 +9,80 @@ interface SystemAccessCounterProps {
 
 export const SystemAccessCounter: React.FC<SystemAccessCounterProps> = ({ onJoinClick }) => {
   const [memberCount, setMemberCount] = useState<number>(0);
+  const [isIncrementing, setIsIncrementing] = useState<boolean>(false);
+
+  // Calculate bonus users based on 30-minute intervals (20 users every 30 minutes)
+  const getElapsedIntervalUsers = (): number => {
+    try {
+      const storageKey = 'dcp_counter_start_time';
+      const stored = localStorage.getItem(storageKey);
+      let startTime: number;
+      if (stored) {
+        startTime = parseInt(stored, 10);
+        if (isNaN(startTime) || startTime > Date.now()) {
+          startTime = Date.now();
+          localStorage.setItem(storageKey, startTime.toString());
+        }
+      } else {
+        startTime = Date.now();
+        localStorage.setItem(storageKey, startTime.toString());
+      }
+
+      const elapsed = Date.now() - startTime;
+      const intervals = Math.floor(elapsed / (30 * 60 * 1000));
+      return intervals * 20;
+    } catch {
+      return 0;
+    }
+  };
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchMemberCount = async () => {
       console.log("🔍 Attempting to fetch member count...");
+      const elapsedBonus = getElapsedIntervalUsers();
       try {
         const coll = collection(db, "members"); 
         const snapshot = await getCountFromServer(coll);
         const realCount = snapshot.data().count;
         console.log("✅ Successfully fetched real count:", realCount);
         
-        // Set baseline of 150 + actual database count
-        setMemberCount(150 + realCount);
+        // Set baseline of 150 + actual database count + 20 users per 30 minutes elapsed
+        if (isMounted) {
+          setMemberCount(150 + realCount + elapsedBonus);
+        }
       } catch (error: any) {
         console.warn("⚠️ Notice fetching member count from Firestore (using baseline 150):", error?.message || error);
-        setMemberCount(150);
+        if (isMounted) {
+          setMemberCount(150 + elapsedBonus);
+        }
       }
     };
     
     fetchMemberCount();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Add 20 users after every 30 minutes
+  useEffect(() => {
+    const THIRTY_MINUTES_MS = 30 * 60 * 1000; // 30 minutes = 1,800,000 ms
+
+    const interval = setInterval(() => {
+      setMemberCount((prevCount) => prevCount + 20);
+      setIsIncrementing(true);
+
+      const timeout = setTimeout(() => {
+        setIsIncrementing(false);
+      }, 600);
+
+      return () => clearTimeout(timeout);
+    }, THIRTY_MINUTES_MS);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleJoinClick = () => {
@@ -63,7 +118,11 @@ export const SystemAccessCounter: React.FC<SystemAccessCounterProps> = ({ onJoin
 
           {/* Counter Display & Typography */}
           <div className="flex items-baseline space-x-3">
-            <div className="text-4xl sm:text-6xl font-black text-white tracking-tight font-mono">
+            <div
+              className={`text-4xl sm:text-6xl font-black tracking-tight font-mono transition-all duration-300 ${
+                isIncrementing ? 'scale-105 text-green-300' : 'scale-100 text-white'
+              }`}
+            >
               {memberCount.toLocaleString()}
             </div>
             <Users className="w-6 h-6 text-green-400 shrink-0 self-center hidden sm:block opacity-80" />
