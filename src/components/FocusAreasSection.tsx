@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pillar } from '../types';
 import { ELEVEN_PILLARS } from '../data/kenyaData';
+import { generateManifestoPdf } from '../utils/generateManifestoPdf';
 import { 
   GraduationCap, 
   HeartPulse, 
@@ -16,7 +17,10 @@ import {
   Search,
   ArrowRight,
   Filter,
-  CheckCircle
+  CheckCircle,
+  Download,
+  FileText,
+  Sparkles
 } from 'lucide-react';
 
 interface FocusAreasSectionProps {
@@ -26,6 +30,21 @@ interface FocusAreasSectionProps {
 export const FocusAreasSection: React.FC<FocusAreasSectionProps> = ({ onSelectPillar }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState<boolean>(false);
+  const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloadingPdf(true);
+      await generateManifestoPdf();
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 4000);
+    } catch (err) {
+      console.error("Failed to generate manifesto PDF:", err);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   // Icon Resolver
   const getIcon = (iconName: string) => {
@@ -78,10 +97,41 @@ export const FocusAreasSection: React.FC<FocusAreasSectionProps> = ({ onSelectPi
           <p className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto font-medium">
             Discover DCP's 11 core policy pillars guiding our commitment to accountable governance, youth empowerment, and national development.
           </p>
+
+          {/* Download Manifesto CTA */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+            <button
+              id="btn-download-manifesto-pdf"
+              onClick={handleDownloadPdf}
+              disabled={isDownloadingPdf}
+              className="inline-flex items-center gap-2.5 px-6 py-3 bg-[#00843D] hover:bg-emerald-700 active:scale-98 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer border-b-2 border-emerald-900 disabled:opacity-60"
+              title="Download official PDF manifesto for offline reading"
+            >
+              {isDownloadingPdf ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Generating Official PDF...</span>
+                </>
+              ) : downloadSuccess ? (
+                <>
+                  <CheckCircle className="w-4 h-4 text-emerald-200" />
+                  <span>Downloaded Successfully!</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Download Full 11-Pillar Manifesto (PDF)</span>
+                  <span className="hidden sm:inline-block text-[10px] bg-emerald-900/60 px-2 py-0.5 rounded font-mono uppercase">
+                    Offline Ready
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Controls Bar: Search & Category Filter */}
-        <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="mt-10 flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
           
           {/* Category Filter Chips */}
           <div className="flex items-center space-x-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
@@ -103,16 +153,30 @@ export const FocusAreasSection: React.FC<FocusAreasSectionProps> = ({ onSelectPi
             ))}
           </div>
 
-          {/* Search Box */}
-          <div className="relative w-full md:w-72">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search policy pillars..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50"
-            />
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            {/* Search Box */}
+            <div className="relative w-full md:w-64">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search policy pillars..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-xl text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50"
+              />
+            </div>
+
+            {/* Quick PDF button in controls bar */}
+            <button
+              id="btn-quick-manifesto-pdf"
+              onClick={handleDownloadPdf}
+              disabled={isDownloadingPdf}
+              className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+              title="Download Full Manifesto as PDF"
+            >
+              <FileText className="w-4 h-4 text-emerald-600" />
+              <span>PDF Manifesto</span>
+            </button>
           </div>
 
         </div>

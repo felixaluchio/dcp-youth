@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Mail, Phone, MapPin, Send, CheckCircle2, ArrowUpRight, Twitter, Facebook, Instagram } from 'lucide-react';
+import { Shield, Mail, Phone, MapPin, Send, CheckCircle2, ArrowUpRight, Twitter, Facebook, Instagram, Download } from 'lucide-react';
+import { generateManifestoPdf } from '../utils/generateManifestoPdf';
 
 interface FooterProps {
   onOpenCountyModal: () => void;
@@ -13,6 +14,18 @@ export const Footer: React.FC<FooterProps> = ({
 }) => {
   const [subscribeEmail, setSubscribeEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloadingPdf(true);
+      await generateManifestoPdf();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +68,14 @@ export const Footer: React.FC<FooterProps> = ({
             <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">Quick Links</span>
             <button onClick={() => scrollTo('registration')} className="text-xs text-left opacity-70 hover:opacity-100 cursor-pointer">Membership</button>
             <button onClick={() => scrollTo('hero')} className="text-xs text-left opacity-70 hover:opacity-100 cursor-pointer">About DCP</button>
+            <button 
+              onClick={handleDownloadPdf} 
+              disabled={isDownloadingPdf}
+              className="text-xs text-left text-emerald-400 hover:text-emerald-300 font-bold cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Party Manifesto (PDF)</span>
+            </button>
             <button onClick={onOpenCountyModal} className="text-xs text-left opacity-70 hover:opacity-100 cursor-pointer">County Offices</button>
             <button onClick={() => scrollTo('rally')} className="text-xs text-left opacity-70 hover:opacity-100 cursor-pointer">Events & Rallies</button>
             <Link to="/admin" className="text-xs text-left text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1 mt-1 font-medium">

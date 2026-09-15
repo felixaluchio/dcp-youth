@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pillar } from '../types';
-import { X, CheckCircle2, Shield, ArrowRight, Compass } from 'lucide-react';
+import { generateManifestoPdf } from '../utils/generateManifestoPdf';
+import { X, CheckCircle2, Shield, ArrowRight, Download, CheckCircle, FileText } from 'lucide-react';
 
 interface PillarDetailModalProps {
   pillar: Pillar | null;
@@ -13,7 +14,23 @@ export const PillarDetailModal: React.FC<PillarDetailModalProps> = ({
   onClose,
   onOpenRegister
 }) => {
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
+
   if (!pillar) return null;
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloading(true);
+      await generateManifestoPdf();
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 4000);
+    } catch (err) {
+      console.error("Failed to generate manifesto PDF:", err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
@@ -62,6 +79,36 @@ export const PillarDetailModal: React.FC<PillarDetailModalProps> = ({
           </div>
         </div>
 
+        {/* Download Full Manifesto Banner */}
+        <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200/80 mb-6 flex items-center justify-between gap-3 text-xs text-emerald-900">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-emerald-700 shrink-0" />
+            <span>Want to read all 11 pillars offline?</span>
+          </div>
+          <button
+            onClick={handleDownloadPdf}
+            disabled={isDownloading}
+            className="px-3 py-1.5 bg-white hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg border border-emerald-300 shadow-xs transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50"
+          >
+            {isDownloading ? (
+              <>
+                <div className="w-3 h-3 border-2 border-emerald-800 border-t-transparent rounded-full animate-spin" />
+                <span>Generating...</span>
+              </>
+            ) : downloadSuccess ? (
+              <>
+                <CheckCircle className="w-3 h-3 text-emerald-600" />
+                <span>Downloaded!</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Download Manifesto PDF</span>
+              </>
+            )}
+          </button>
+        </div>
+
         {/* Bottom Actions */}
         <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-slate-500">
@@ -73,7 +120,7 @@ export const PillarDetailModal: React.FC<PillarDetailModalProps> = ({
                 onClose();
                 onOpenRegister();
               }}
-              className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-md"
+              className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-md cursor-pointer"
             >
               <span>Support This Pillar (Register)</span>
               <ArrowRight className="w-4 h-4" />

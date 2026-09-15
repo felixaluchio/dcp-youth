@@ -30,9 +30,11 @@ import {
   Layers,
   Clock,
   MapPin,
-  Building2
+  Building2,
+  Users
 } from 'lucide-react';
 import dcpLogo from '../assets/images/dcp_official_logo_hd_1786025213182.jpg';
+import RegisteredMembers from './RegisteredMembers';
 
 // ============================================================================
 // FIREBASE CONFIGURATION
@@ -93,7 +95,7 @@ export const AdminDashboard: React.FC = () => {
   const [authPassword, setAuthPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<'gallery' | 'videos' | 'upcoming'>('gallery');
+  const [activeTab, setActiveTab] = useState<'gallery' | 'videos' | 'upcoming' | 'members'>('gallery');
 
   // Photo / Event State
   const [photoItems, setPhotoItems] = useState<PhotoGalleryAdminItem[]>([]);
@@ -868,6 +870,21 @@ export const AdminDashboard: React.FC = () => {
                   {photoItems.filter((i) => i.timing === 'upcoming').length}
                 </span>
               </button>
+
+              <button
+                onClick={() => setActiveTab('members')}
+                className={`shrink-0 w-auto lg:w-full flex items-center gap-2.5 sm:gap-3 px-3.5 py-2.5 sm:py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'members'
+                    ? 'bg-green-700 text-white shadow-lg shadow-green-900/30'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                }`}
+              >
+                <Users className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap">Registered Members</span>
+                <span className="ml-auto bg-green-500/20 text-green-300 text-xs px-2 py-0.5 rounded-full border border-green-500/30 shrink-0 font-black">
+                  Registry
+                </span>
+              </button>
             </nav>
           </div>
 
@@ -1636,6 +1653,11 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
             </div>
+          )}
+ 
+          {/* TAB 4: REGISTERED MEMBERS */}
+          {activeTab === 'members' && (
+            <RegisteredMembers />
           )}
 
         </main>

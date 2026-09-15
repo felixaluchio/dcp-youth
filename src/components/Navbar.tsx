@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Shield, Users, MapPin, Calendar, FileText, ChevronRight, PhoneCall, ChevronDown } from 'lucide-react';
+import { Menu, X, Shield, Users, MapPin, Calendar, FileText, ChevronRight, PhoneCall, ChevronDown, Download } from 'lucide-react';
 import dcpOfficialLogo from '../assets/images/dcp_official_logo_hd_1786025213182.jpg';
+import { generateManifestoPdf } from '../utils/generateManifestoPdf';
 
 interface NavbarProps {
   onOpenCountyModal: () => void;
@@ -17,6 +18,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [daysLeft, setDaysLeft] = useState(0);
   const [isMediaOpen, setIsMediaOpen] = useState(false);
   const [mobileMediaOpen, setMobileMediaOpen] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloadingPdf(true);
+      await generateManifestoPdf();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   useEffect(() => {
     const targetDate = new Date('2027-08-10T00:00:00+03:00').getTime();
@@ -192,6 +205,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               County Offices
             </button>
+
+            <button
+              id="btn-nav-manifesto-pdf"
+              onClick={handleDownloadPdf}
+              disabled={isDownloadingPdf}
+              className="text-xs font-bold px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+              title="Download Official 11-Pillar Manifesto (PDF)"
+            >
+              {isDownloadingPdf ? (
+                <div className="w-3.5 h-3.5 border-2 border-emerald-800 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Download className="w-3.5 h-3.5 text-emerald-700" />
+              )}
+              <span>Manifesto (PDF)</span>
+            </button>
           </nav>
 
           {/* CTA Action Button & Days Countdown Pill */}
@@ -317,6 +345,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="w-full text-left px-4 py-2.5 rounded-lg font-medium text-gray-800 hover:bg-gray-100"
           >
             Membership Registration (Free)
+          </button>
+          <button
+            id="btn-mobile-manifesto-pdf"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              handleDownloadPdf();
+            }}
+            className="w-full text-left px-4 py-2.5 rounded-lg font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 flex items-center justify-between border border-emerald-200"
+          >
+            <div className="flex items-center space-x-2">
+              <Download className="w-4 h-4 text-emerald-700" />
+              <span>Download 11-Pillar Manifesto (PDF)</span>
+            </div>
+            <span className="text-[10px] uppercase font-black bg-emerald-700 text-white px-2 py-0.5 rounded">PDF</span>
           </button>
           <button
             onClick={() => {
