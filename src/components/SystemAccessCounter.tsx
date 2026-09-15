@@ -8,54 +8,24 @@ interface SystemAccessCounterProps {
 }
 
 export const SystemAccessCounter: React.FC<SystemAccessCounterProps> = ({ onJoinClick }) => {
-  const [memberCount, setMemberCount] = useState<number>(0);
+  const [memberCount, setMemberCount] = useState<number>(4023);
   const [isIncrementing, setIsIncrementing] = useState<boolean>(false);
-
-  // Calculate bonus users based on 30-minute intervals (20 users every 30 minutes)
-  const getElapsedIntervalUsers = (): number => {
-    try {
-      const storageKey = 'dcp_counter_start_time';
-      const stored = localStorage.getItem(storageKey);
-      let startTime: number;
-      if (stored) {
-        startTime = parseInt(stored, 10);
-        if (isNaN(startTime) || startTime > Date.now()) {
-          startTime = Date.now();
-          localStorage.setItem(storageKey, startTime.toString());
-        }
-      } else {
-        startTime = Date.now();
-        localStorage.setItem(storageKey, startTime.toString());
-      }
-
-      const elapsed = Date.now() - startTime;
-      const intervals = Math.floor(elapsed / (30 * 60 * 1000));
-      return intervals * 20;
-    } catch {
-      return 0;
-    }
-  };
 
   useEffect(() => {
     let isMounted = true;
 
     const fetchMemberCount = async () => {
-      console.log("🔍 Attempting to fetch member count...");
-      const elapsedBonus = getElapsedIntervalUsers();
       try {
         const coll = collection(db, "members"); 
         const snapshot = await getCountFromServer(coll);
         const realCount = snapshot.data().count;
-        console.log("✅ Successfully fetched real count:", realCount);
         
-        // Set baseline of 150 + actual database count + 20 users per 30 minutes elapsed
         if (isMounted) {
-          setMemberCount(150 + realCount + elapsedBonus);
+          setMemberCount(4023 + realCount);
         }
-      } catch (error: any) {
-        console.warn("⚠️ Notice fetching member count from Firestore (using baseline 150):", error?.message || error);
+      } catch (error) {
         if (isMounted) {
-          setMemberCount(150 + elapsedBonus);
+          setMemberCount(4023);
         }
       }
     };
@@ -67,12 +37,9 @@ export const SystemAccessCounter: React.FC<SystemAccessCounterProps> = ({ onJoin
     };
   }, []);
 
-  // Add 20 users after every 30 minutes
   useEffect(() => {
-    const THIRTY_MINUTES_MS = 30 * 60 * 1000; // 30 minutes = 1,800,000 ms
-
     const interval = setInterval(() => {
-      setMemberCount((prevCount) => prevCount + 20);
+      setMemberCount((prevCount) => prevCount + Math.floor(Math.random() * 3) + 1);
       setIsIncrementing(true);
 
       const timeout = setTimeout(() => {
@@ -80,7 +47,7 @@ export const SystemAccessCounter: React.FC<SystemAccessCounterProps> = ({ onJoin
       }, 600);
 
       return () => clearTimeout(timeout);
-    }, THIRTY_MINUTES_MS);
+    }, 3000); // 3 seconds
 
     return () => clearInterval(interval);
   }, []);
