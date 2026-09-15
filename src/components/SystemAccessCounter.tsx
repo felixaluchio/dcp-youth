@@ -11,6 +11,7 @@ export const SystemAccessCounter: React.FC<SystemAccessCounterProps> = ({ onJoin
   const [memberCount, setMemberCount] = useState<number>(4023);
   const [isIncrementing, setIsIncrementing] = useState<boolean>(false);
 
+  // Fetch the real count on load and add it to the 4023 baseline
   useEffect(() => {
     let isMounted = true;
 
@@ -37,6 +38,7 @@ export const SystemAccessCounter: React.FC<SystemAccessCounterProps> = ({ onJoin
     };
   }, []);
 
+  // Timer: Add 1 to 3 users every 1 minute (60,000 milliseconds)
   useEffect(() => {
     const interval = setInterval(() => {
       setMemberCount((prevCount) => prevCount + Math.floor(Math.random() * 3) + 1);
@@ -47,7 +49,7 @@ export const SystemAccessCounter: React.FC<SystemAccessCounterProps> = ({ onJoin
       }, 600);
 
       return () => clearTimeout(timeout);
-    }, 3000); // 3 seconds
+    }, 60000); // Changed to 1 minute
 
     return () => clearInterval(interval);
   }, []);
